@@ -295,10 +295,7 @@ class TVSparserAssets:
 		title = unescape(tvsphelper.searchOneValue(r'<h1 class="headline headline--article broadcast stage-heading">(.*?)</h1>', extract, ""))
 		block = tvsphelper.searchOneValue(r'<span class="text-row">(.*?)</span></div>', extract, "").split(" | ")
 		countryYear = block[0] if block else ""
-		if len(block) > 1:
-			genre = block[1][:block[1].find("</span>")] if "</span>" in block[1] else block[1]
-		else:
-			genre = ""
+		genre = block[1][:block[1].find("</span>")] if "</span>" in block[1] else block[1] if len(block) > 1 else ""
 		repeatHint = unescape(tvsphelper.searchOneValue(r'<span class="text-row repeat">(.*?)</span>', f"{block[1].replace('</span>', '')}</span>", "")) if len(block) > 1 else ""
 		serialinfo = tvsphelper.searchOneValue(r'<section class="serial-info">\s*<span>(.*?)</span>', extract, "").split(",")
 		len_serialinfo = len(serialinfo)
@@ -308,7 +305,7 @@ class TVSparserAssets:
 		conclusion = tvsphelper.searchOneValue(r'<blockquote class="content-rating__rating-genre__conclusion-quote">(.*?)</blockquote>', extract, "", flags=S)
 		conclusion = unescape(conclusion.replace("<p>", "").replace("</p>", "").strip())
 		stage = tvsphelper.searchOneValue(r'<span class="stage-underline gray">(.*?)</span>', extract, "", flags=S).split(" | ")
-		timeStartEnd = stage[1].split(" - ") if stage[1] else ""
+		timeStartEnd = stage[1].split(" - ") if len(stage) > 1 else ""
 		timeStartTs, startHourmin = None, datetime.strptime(timeStartEnd[0].replace(" Uhr", ""), '%H:%M').time() if timeStartEnd else None
 		timeEndTs, endHourmin = None, datetime.strptime(timeStartEnd[1].replace(" Uhr", ""), '%H:%M').time() if len(timeStartEnd) > 1 else None
 		nowDt = datetime.now(tz=None)
@@ -445,7 +442,7 @@ def main(argv):  # shell interface
 			exit()
 		elif opt in ("-a", "--assetslist"):
 			jsonList = tvspassets.getChannelAssets(["ZDF"], datetime.now(), timeCode="0")
-		elif opt in ("-n", "--new"):
+		elif opt in ("-n", "--now"):
 			jsonList = tvspassets.getChannelAssets(["ARD"], datetime.now(), timeCode="now")
 		elif opt in ("-c", "--channellist"):
 			jsonList = tvspchannels.parseChannels()
